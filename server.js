@@ -2,9 +2,11 @@ import express from "express";
 import { mongoose } from "mongoose";
 import cors from "cors";
 import chalk from "chalk";
+import dbInit from "./db/index.js";
+import userRouter from "./routers/user.router.js";
+import userProgressRouter from "./routers/userProgress.router.js";
 import ErrorResponse from "./utils/ErrorResponse.js";
 import errorHandler from "./middlewares/errorHandler.js";
-import dbInit from "./db/index.js";
 
 await dbInit();
 const app = express();
@@ -12,7 +14,8 @@ const port = process.env.PORT || 8000;
 
 app.use(cors());
 app.use(express.json());
-// app.use("/leaderboard", leaderboardRouter);
+app.use("/user", userRouter);
+app.use("/userProgress", userProgressRouter);
 
 app.get("/", async (req, res) => {
   const dbResponse = await mongoose.connection.db.admin().ping();
@@ -27,7 +30,5 @@ app.use("/{*splat}", (req, res) => {
 app.use(errorHandler);
 
 app.listen(port, () => {
-  console.log(
-    chalk.bgGreen(`H.A.T. is listening on port ${port} `)
-  );
+  console.log(chalk.bgGreen(`H.A.T. is listening on port ${port} `));
 });

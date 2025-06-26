@@ -20,12 +20,9 @@ const userModel = new Schema(
       enum: ["Gryffindor", "Slytherin", "Hufflepuff", "Ravenclaw"],
       default: null,
     },
-    //   housesProgress: [
-    //     {
-    //       type: Schema.Types.ObjectId,
-    //       ref: "UserProgress",
-    //     },
-    //   ],
+    userProgressId: { 
+      type: Schema.Types.ObjectId, 
+      ref: "UserProgress" },
   },
   { timestamps: true }
 );

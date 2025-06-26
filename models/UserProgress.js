@@ -1,18 +1,5 @@
 import { Schema, model } from "mongoose";
 
-const userProgressModel = new Schema(
-  {
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-      unique: true,
-    },
-    houses: [houseProgressModel], // Array von Häusern mit Fortschritt
-  },
-  { timestamps: true }
-);
-
 const houseProgressModel = new Schema({
   houseName: {
     type: String,
@@ -27,6 +14,27 @@ const houseProgressModel = new Schema({
     type: Date,
     default: null,
   },
+  score: {
+    type: Number,
+    default: 0,
+  },
 });
+
+const userProgressModel = new Schema(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      unique: true,
+    },
+    houses: [houseProgressModel],
+    pointsGryffindor: { type: Number, default: 0 },
+    pointsHufflepuff: { type: Number, default: 0 },
+    pointsRavenclaw: { type: Number, default: 0 },
+    pointsSlytherin: { type: Number, default: 0 },
+  },
+  { timestamps: true }
+);
 
 export const UserProgress = model("UserProgress", userProgressModel);
