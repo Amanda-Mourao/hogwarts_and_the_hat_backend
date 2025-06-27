@@ -7,6 +7,7 @@ import userRouter from "./routers/user.router.js";
 import userProgressRouter from "./routers/userProgress.router.js";
 import ErrorResponse from "./utils/ErrorResponse.js";
 import errorHandler from "./middlewares/errorHandler.js";
+import upload from "./middlewares/upload.js";
 
 await dbInit();
 const app = express();
@@ -14,6 +15,8 @@ const port = process.env.PORT || 8000;
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static("uploads"));
+
 app.use("/user", userRouter);
 app.use("/userProgress", userProgressRouter);
 
@@ -23,6 +26,17 @@ app.get("/", async (req, res) => {
   res.json({ message: "Running", dbResponse });
 });
 
+app.post("/file-upload", upload.single("image"), (req, res) => {
+  // console.log(req.body);
+  console.log(req.file);
+  // const location = `${req.protocol}://${req.host}/${req.file.filename}`;
+  res.json({
+    message: "File upload successful",
+    location: req.file.secure_url,
+  });
+});
+
+// app.use(/.*/,
 app.use("/{*splat}", (req, res) => {
   throw new ErrorResponse(`Check route. You used ${req.originalUrl}`, 404);
 });
