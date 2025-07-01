@@ -44,5 +44,5 @@ app.use("/{*splat}", (req, res) => {
 app.use(errorHandler);
 
 app.listen(port, () => {
-  console.log(chalk.bgGreen(`H.A.T. is listening on port ${port} `));
+  console.log(chalk.bgGreen(`H.A.T. is listening on port ${port}`));
 });
