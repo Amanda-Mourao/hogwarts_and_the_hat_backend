@@ -2,7 +2,7 @@ import multer from 'multer';
 import CloudinaryStorage from '../services/cloudinary.js';
 
 const storage = new CloudinaryStorage();
-const allowedFormats = ['png', 'jpg', 'jpeg', 'svg', 'webp', 'heic', 'avif', 'gif', 'mp4', 'mp3', 'move'];
+const allowedFormats = ['png', 'jpg', 'jpeg', 'svg', 'webp', 'heic', 'avif', 'gif', 'mp4', 'mp3', 'mov'];
 const fileFilter = (req, file, cb) => {
   const fileExt = file.mimetype.split('/')[1];
   if (allowedFormats.includes(fileExt)) {
