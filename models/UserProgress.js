@@ -1,40 +1,24 @@
 import { Schema, model } from "mongoose";
 
-const houseProgressModel = new Schema({
-  houseName: {
-    type: String,
-    enum: ["Gryffindor", "Slytherin", "Hufflepuff", "Ravenclaw"],
-    required: true,
-  },
-  isCompleted: {
-    type: Boolean,
-    default: false,
-  },
-  completedAt: {
-    type: Date,
-    default: null,
-  },
-  score: {
-    type: Number,
-    default: 0,
-  },
+const houseSchema = new Schema({
+  houseName: { type: String, required: true },
+  score: { type: Number, default: 0 },
+  isCompleted: { type: Boolean, default: false },
+  completedAt: { type: Date, default: null },
 });
 
-const userProgressModel = new Schema(
-  {
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-      unique: true,
-    },
-    houses: [houseProgressModel],
-    pointsGryffindor: { type: Number, default: 0 },
-    pointsHufflepuff: { type: Number, default: 0 },
-    pointsRavenclaw: { type: Number, default: 0 },
-    pointsSlytherin: { type: Number, default: 0 },
+const userProgressSchema = new Schema({
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+    unique: true,
   },
-  { timestamps: true }
-);
+  houses: { type: [houseSchema], default: [] },
+  pointsGryffindor: { type: Number, default: 0 },
+  pointsHufflepuff: { type: Number, default: 0 },
+  pointsSlytherin: { type: Number, default: 0 },
+  pointsRavenclaw: { type: Number, default: 0 },
+});
 
-export const UserProgress = model("UserProgress", userProgressModel);
+export const UserProgress = model("UserProgress", userProgressSchema);

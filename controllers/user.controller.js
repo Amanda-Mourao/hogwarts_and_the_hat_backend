@@ -1,31 +1,33 @@
 import { User } from "../models/User.js";
+import ErrorResponse from "../utils/ErrorResponse.js";
 
-export const getOneUser = async (req, res) => {
-  const { id } = req.params;
-  const user = await User.findById(id).select("-passwordHash");
-  if (!user) throw new ErrorResponse("User not found", 404);
-  res.json({ data: user });
-};
+// REGISTER
+export const registerUser = async (req, res) => {
+  const { username, email, password } = req.body;
 
-export const updateUser = async (req, res) => {
-  const { id } = req.params;
-  const user = await User.findByIdAndUpdate(id, req.body, {
-    new: true,
-    select: "-passwordHash",
+  if (await User.findOne({ email })) {
+    throw new ErrorResponse("Email is already registered", 400);
+  }
+
+  const user = await User.create({ username, email, password });
+
+  res.status(201).json({
+    user: { id: user._id, username: user.username, email: user.email },
   });
-  if (!user) throw new ErrorResponse("User not found", 404);
-  res.json({ data: user });
 };
 
-//   // Nur Felder aktualisieren, die gesetzt sind
-//   Object.keys(updateData).forEach(
-//     (key) => updateData[key] === undefined && delete updateData[key]
-//   );
+// LOGIN
+export const login = async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) throw new ErrorResponse("User not found", 400);
 
-//   const user = await User.findByIdAndUpdate(req.params.id, updateData, {
-//     new: true,
-//     select: "-passwordHash",
-//   });
-//   if (!user) return res.status(404).json({ message: "User not found." });
-//   res.json(user);
-// };
+  res.json({
+    user: { id: user._id, username: user.username, email: user.email },
+  });
+};
+
+// LOGOUT
+export const logout = (req, res) => {
+  res.json({ message: "Logout successful" });
+};

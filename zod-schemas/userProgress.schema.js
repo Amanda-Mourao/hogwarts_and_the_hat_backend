@@ -1,5 +1,5 @@
 import { z } from "zod";
-// Enum to ensure only valid house names are allowed
+
 const houseNameEnum = z.enum([
   "Gryffindor",
   "Slytherin",
@@ -7,7 +7,7 @@ const houseNameEnum = z.enum([
   "Ravenclaw",
 ]);
 
-// Schema for a single house's progress including score
+// Schema für ein House mit score prüfen
 const houseProgressSchema = z.object({
   houseName: houseNameEnum,
   isCompleted: z.boolean().optional(),
@@ -15,7 +15,7 @@ const houseProgressSchema = z.object({
   score: z.number().optional(),
 });
 
-// Main UserProgress schema including points per house
+// Houseprogress mit Poinst prüfen
 export const userProgressSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
   houses: z.array(houseProgressSchema).optional(),
@@ -24,11 +24,13 @@ export const userProgressSchema = z.object({
   pointsRavenclaw: z.number().optional(),
   pointsSlytherin: z.number().optional(),
 });
-// Schema for initializing progress (e.g., after user registration)
+
+// Schema prfen nachdem User angelmdelt ist
 export const initProgressSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
 });
-// Schema for marking a house as completed
+
+// Schema prüfen wenn ein House abgeschlossen ist
 export const completeHouseSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
   houseName: houseNameEnum,

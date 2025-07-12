@@ -1,51 +1,92 @@
 import { User } from "../models/User.js";
+import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import ErrorResponse from "../utils/ErrorResponse.js";
 
-const registerUser = async (req, res) => {
-  const { username, email, password, userProgressId } = req.body;
+const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret";
 
-  //   const exists = await User.findOne({ email });
-  //   if (exists)
-  //     return res.status(409).json({ message: "E-Mail already in use." });
+// Registration
+export const registerUser = async (req, res) => {
+  const { username, email, password } = req.body;
 
-  // Email überprüfen
-  const emailInUse = await User.exists({ email });
-  if (emailInUse) throw new ErrorResponse("Go to login", 200);
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw new ErrorResponse("Email is already registered", 400);
+  }
 
-  // Passwort absichern
-  const salt = await bcrypt.genSalt(15);
-  const hashedPW = await bcrypt.hash(password, salt);
+  const passwordHash = await bcrypt.hash(password, 10);
+  const user = await User.create({ username, email, passwordHash });
 
-  // User abspeichern
-  const user = await User.create({
-    username,
-    email,
-    password: hashedPW,
-    userProgressId,
+  const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
+    expiresIn: "24h",
   });
 
-  delete user.password;
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 2 * 60 * 60 * 1000,
+  });
 
-  //   res
-  //     .status(201)
-  //     .json({ userId: userId, username: user.username, email: user.email });
+  res.json({
+    user: { id: user._id, username: user.username, email: user.email },
+  });
 };
 
-const login = async (req, res) => {
+// Login
+export const login = async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email }).select("+password").lean();
-  if (!user) throw new ErrorResponse("Invalid credentials", 401);
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ErrorResponse("User not found", 400);
+  }
 
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) throw new ErrorResponse("Invalid credentials", 401);
+  const pwOk = await bcrypt.compare(password, user.passwordHash);
+  if (!pwOk) {
+    throw new ErrorResponse("Incorrect password", 400);
+  }
 
-  delete user.password;
-  //   res.json({ userId: user._id, username: user.username, currentHouse: user.currentHouse });
+  const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
+    expiresIn: "24h",
+  });
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 2 * 60 * 60 * 1000,
+  });
+
+  res.json({
+    user: { id: user._id, username: user.username, email: user.email },
+  });
 };
 
-const logout = (req, res) => {
-  res.status(200).json({ message: "Logout successful." });
+// GET me, wenn user Token is valid
+export const getMe = async (req, res) => {
+  const token =
+    req.cookies.token ||
+    (req.headers.authorization
+      ? req.headers.authorization.split(" ")[1]
+      : null);
+
+  if (!token) {
+    throw new ErrorResponse("Not logged in", 401);
+  }
+
+  const payload = jwt.verify(token, JWT_SECRET);
+  const user = await User.findById(payload.id);
+  if (!user) {
+    throw new ErrorResponse("User not found", 404);
+  }
+
+  const { passwordHash, ...userData } = user.toObject();
+  res.json({ user: userData });
 };
 
-export { registerUser, login, logout };
+// Logout
+export const logout = (req, res) => {
+  res.clearCookie("token");
+  res.json({ message: "Logout successful" });
+};

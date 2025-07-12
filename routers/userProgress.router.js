@@ -1,32 +1,43 @@
-import { Router } from "express";
-import {getUserProgress, initUserProgress, completeHouse, updateUserProgress} from "../controllers/userProgress.controller.js";
-import validate from "../middlewares/validate.js";
-import {userProgressSchema, initProgressSchema, completeHouseSchema} from "../zod-schemas/userProgress.schema.js";
+import express from "express";
+import {
+  getUserProgress,
+  updateUserProgress,
+  initUserProgress,
+} from "../controllers/userProgress.controller.js";
+import validateUserId from "../middlewares/validateUserId.js";
+import { UserProgress } from "../models/UserProgress.js";
+import ErrorResponse from "../utils/ErrorResponse.js";
 
-const userProgressRouter = Router();
+const userProgressRouter = express.Router();
 
-// Hole den Fortschritt eines Users
-userProgressRouter.get("/:userId", getUserProgress);
+userProgressRouter.get("/:userId", validateUserId, getUserProgress);
+userProgressRouter.put("/:userId", validateUserId, updateUserProgress);
+userProgressRouter.post("/init", validateUserId, initUserProgress);
 
-// Initialisiere Fortschritt (z.B. direkt nach Registrierung)
-userProgressRouter.post(
-  "/init",
-  validate(initProgressSchema),
-  initUserProgress
-);
+// Gewinnerhaus bestimmen, um den Hut uns zu zuweisen
+userProgressRouter.get(
+  "/:userId/top-house",
+  validateUserId,
+  async (req, res) => {
+    const { userId } = req.params;
 
-// Markiere ein Haus als abgeschlossen
-userProgressRouter.post(
-  "/complete-house",
-  validate(completeHouseSchema),
-  completeHouse
-);
+    const progress = await UserProgress.findOne({ userId });
+    if (!progress) throw new ErrorResponse("Not found", 404);
 
-// Fortschritt aktualisieren (z.B. Score/Points)
-userProgressRouter.put(
-  "/:userId",
-  validate(userProgressSchema),
-  updateUserProgress
+    const houses = [
+      { name: "Slytherin", points: progress.pointsSlytherin ?? -Infinity },
+      { name: "Gryffindor", points: progress.pointsGryffindor ?? -Infinity },
+      { name: "Hufflepuff", points: progress.pointsHufflepuff ?? -Infinity },
+      { name: "Ravenclaw", points: progress.pointsRavenclaw ?? -Infinity },
+    ];
+
+    const maxPoints = Math.max(...houses.map((h) => h.points));
+
+    const topHouses = houses.filter((h) => h.points === maxPoints);
+
+    const winner = topHouses[Math.floor(Math.random() * topHouses.length)].name;
+    res.json({ topHouse: winner, scores: progress });
+  }
 );
 
 export default userProgressRouter;
