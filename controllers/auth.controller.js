@@ -26,6 +26,7 @@ export const registerUser = async (req, res) => {
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? "None" : "Lax",
+    domain: ".onrender.com",
     maxAge: 2 * 60 * 60 * 1000,
   });
 
@@ -56,6 +57,7 @@ export const login = async (req, res) => {
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? "None" : "Lax",
+    domain: ".onrender.com",
     maxAge: 2 * 60 * 60 * 1000,
   });
 
@@ -92,6 +94,7 @@ export const logout = (req, res) => {
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? "None" : "Lax",
+    domain: ".onrender.com",
   });
   res.json({ message: "Logout successful" });
 };
