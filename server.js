@@ -20,7 +20,7 @@ const port = process.env.PORT || 8000;
 // CORS für Cookies
 app.use(
   cors({
-    origin: "https://final-project-frontend-twpn.onrender.com",
+    origin: "http://localhost:5173/",
     credentials: true,
   })
 );
