@@ -4,7 +4,6 @@ import bcrypt from "bcrypt";
 import ErrorResponse from "../utils/ErrorResponse.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret";
-const isProduction = process.env.NODE_ENV === "production";
 
 // Registration
 export const registerUser = async (req, res) => {
@@ -24,9 +23,9 @@ export const registerUser = async (req, res) => {
 
   res.cookie("token", token, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "None" : "Lax",
-    // domain: ".onrender.com",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+
     maxAge: 2 * 60 * 60 * 1000,
   });
 
@@ -55,9 +54,9 @@ export const login = async (req, res) => {
 
   res.cookie("token", token, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "None" : "Lax",
-    // domain: ".onrender.com",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+
     maxAge: 2 * 60 * 60 * 1000,
   });
 
@@ -90,11 +89,6 @@ export const getMe = async (req, res) => {
 
 // Logout
 export const logout = (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "None" : "Lax",
-    // domain: ".onrender.com",
-  });
+  res.clearCookie("token");
   res.json({ message: "Logout successful" });
 };
